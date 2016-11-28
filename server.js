@@ -1,8 +1,32 @@
+
+import { Sensor, TimeSeries, Datum, Types, Parser } from '.';
+
+var portmqtt = '';
+if(process.argv.length != 3){
+  console.error('Usage : node server.js [PORT]');
+  process.exit();
+} else {
+  let regex = /\d{4}/;
+  let p = process.argv[2];
+  if(p.match(regex)){
+    portmqtt = p;
+  } else {
+    console.error('Port invalide');
+    process.exit();
+  }
+}
+
 var http = require('http'),
   WebSocketServer = require('ws').Server,
   express = require('express'),
   port = 1234,
   host = '0.0.0.0';
+
+
+var mqttURL = 'mqtt://localhost:'+portmqtt;
+console.log(mqttURL);
+var mqtt = require('mqtt');
+var clientMQTT  = mqtt.connect(mqttURL);
 
 // create a new HTTP server to deal with low level connection details (tcp connections, sockets, http handshakes, etc.)
 var server = http.createServer();
@@ -53,4 +77,14 @@ wss.on('connection', function(client) {
 // http sever starts listenning on given host and port.
 server.listen(port, host, function() {
   console.log('Listening on ' + server.address().address + ':' + server.address().port);
+});
+
+clientMQTT.subscribe('value/#');
+
+clientMQTT.on('message', (topic, message) => {
+  // message is Buffer
+  let sensorType = topic.split('/')[1];
+  console.log(sensorType);
+  console.log(message.toString());
+  wss.broadcast(message.toString());
 });
