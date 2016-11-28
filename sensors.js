@@ -3,10 +3,9 @@
 
 export const typeEnum = {
   NONE: 'NONE',
-  TEMPERATURE_CHAMBRE: 'temperatureChambre',
-  TEMPERATURE_A111: 'temperatureSalleA111',
-  MON_ATTENTION: 'MonAttention',
-  MES_YEUX: 'MesYeux'
+  POSITIVE_NUMBER: 'POSITIVE_NUMBER',
+  PERCENT: 'PERCENT',
+  ON_OFF: 'ON_OFF'
 };
 Object.freeze(typeEnum);
 
@@ -117,6 +116,16 @@ export class Sensor {
   }
   get data() {
     return this.s_data;
+  }
+
+  toJSON() {
+    let v = '';
+    if (this.s_data instanceof Datum) {
+      v = this.s_data.value;
+    } else {
+      //TODO TimeSeries JSON
+    }
+    return '{\"id\":\"'+this.s_id+'\",\"name\":\"'+this.s_name+'\",\"data\":\"'+v+'\",\"type\":\"'+this.s_type+'\"}';
   }
 }
 

@@ -1,6 +1,4 @@
 
-import { Sensor, TimeSeries, Datum, Types, Parser } from '.';
-
 var portmqtt = '';
 if(process.argv.length != 3){
   console.error('Usage : node server.js [PORT]');
@@ -16,12 +14,15 @@ if(process.argv.length != 3){
   }
 }
 
+import { Sensor, TimeSeries, Datum, Types, Parser } from './sensors';
+
 var http = require('http'),
   WebSocketServer = require('ws').Server,
   express = require('express'),
   port = 1234,
   host = '0.0.0.0';
 
+var devices = [];
 
 var mqttURL = 'mqtt://localhost:'+portmqtt;
 console.log(mqttURL);
@@ -61,7 +62,7 @@ wss.on('connection', function(client) {
   wsname = wsname.split('=')[1];
 
   // greet the newly connected user
-  client.send('Welcome, ' + decodeURIComponent(wsname) + '!');
+//  client.send('Welcome, ' + decodeURIComponent(wsname) + '!');
 
   // Register a listener on each message of each connection
   client.on('message', function(message) {
@@ -83,8 +84,37 @@ clientMQTT.subscribe('value/#');
 
 clientMQTT.on('message', (topic, message) => {
   // message is Buffer
-  let sensorType = topic.split('/')[1];
-  console.log(sensorType);
-  console.log(message.toString());
-  wss.broadcast(message.toString());
+  let name = topic.split('/')[1];
+  createSensor(name, message);
+
+  let str = '{\"sensors\":[';
+  for(let key in devices){
+    str += devices[key].toJSON()+',';
+  }
+  str = str.substring(0,str.length-1);
+  str += ']}';
+  //console.log(str);
+  wss.broadcast(str);
 });
+
+function createSensor(name, message){
+
+  let json = JSON.parse(message);
+  let id = 0;
+  for (var x = 0; x < name.length; x++)
+  {
+      var c = name.charCodeAt(x);
+      id += c;
+  }
+  let value = 0;
+  if(json.type === 'ON_OFF'){
+    if(json.value == 'ON') value = 1;
+    else value = 0;
+  } else {
+    value = parseInt(json.value);
+  }
+
+  let data = new Datum(value);
+  devices[name] = new Sensor(id, name, data, json.type);
+  console.log(devices);
+}
