@@ -25,7 +25,7 @@ if (def(wsname)) {
   wsname = nameGenerator();
   document.cookie = "wsname=" + encodeURIComponent(wsname);
 }
-document.querySelector('header>p').textContent = decodeURIComponent(wsname);
+document.querySelector('header>p').textContent = 'Welcome '+decodeURIComponent(wsname)+' !';
 
 
 
@@ -45,13 +45,14 @@ ws.onmessage = function(event) {
   list.sensors.forEach(s => {
     //ICI changer valeur IHM
 
-    let sensorLine = document.querySelector('#s'+s.id);
-    console.log(sensorLine);
+    let sensorBox = document.querySelector('#s'+s.id);
+    console.log(sensorBox);
 
-    if(sensorLine !== null){
+    if(sensorBox !== null){
       console.log('Update');
-      sensorLine.parentNode.removeChild(sensorLine);
+      sensorBox.parentNode.removeChild(sensorBox);
     }
+
 
     let tr = document.createElement('tr');
 
@@ -60,7 +61,20 @@ ws.onmessage = function(event) {
     let tdType = document.createElement('td');
 
     let name = document.createTextNode(s.name);
-    let value = document.createTextNode(s.data);
+    let value;
+    if( s.type === 'PERCENT'){
+      value = document.createElement('progress');
+      value.value = s.data;
+      value.max = '100';
+      value.id = 's'+s.id;
+      let text = document.createTextNode(s.data+"%");
+      value.appendChild(text);
+    } else if( s.type === 'ON_OFF'){
+      tdValue.className += (s.data==='1')?'green':'red';
+      value = document.createTextNode(s.data);
+    } else {
+      value = document.createTextNode(s.data);
+    }
     let type = document.createTextNode(s.type);
 
     tdName.appendChild(name);tr.appendChild(tdName);
