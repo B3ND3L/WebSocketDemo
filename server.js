@@ -116,5 +116,5 @@ function createSensor(name, message){
 
   let data = new Datum(value);
   devices[name] = new Sensor(id, name, data, json.type);
-  console.log(devices);
+  console.log('---');
 }

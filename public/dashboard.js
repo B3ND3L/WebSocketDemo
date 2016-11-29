@@ -44,39 +44,33 @@ ws.onmessage = function(event) {
   let list = JSON.parse(event.data);
   list.sensors.forEach(s => {
     //ICI changer valeur IHM
-    let elem = document.querySelector('#s'+s.id);
-    //console.log(elem);
-    if(elem === null){
-      elem = document.createElement('div');
-      elem.id = 's'+s.id;
-      if(s.type === 'PERCENT' ){
 
-        let prog = document.createElement('progress');
-        prog.value = parseFloat(s.data)*100;
-        prog.max = '100';
-        prog.id = '#s'+s.id+'_progress';
-        let text = document.createTextNode(s.data+"%");
-        prog.appendChild(text);
-        elem.appendChild(prog);
+    let sensorLine = document.querySelector('#s'+s.id);
+    console.log(sensorLine);
 
-      } else if (s.type === 'ON_OFF'){
-
-
-      } else {
-
-      }
-    } else {
-    //  console.log('update');
-      if(s.type === 'PERCENT' ){
-        console.log('#s1248_progress ?=' + '#s'+s.id+'_progress' );
-        let prog = document.querySelector('#s'+s.id+'_progress');
-        prog.value = parseFloat(s.data)*100;
-        console.log(s.data);
-      } else if (s.type === 'ON_OFF'){
-
-      }
+    if(sensorLine !== null){
+      console.log('Update');
+      sensorLine.parentNode.removeChild(sensorLine);
     }
-    messages.appendChild(elem);
+
+    let tr = document.createElement('tr');
+
+    let tdName = document.createElement('td');
+    let tdValue= document.createElement('td');
+    let tdType = document.createElement('td');
+
+    let name = document.createTextNode(s.name);
+    let value = document.createTextNode(s.data);
+    let type = document.createTextNode(s.type);
+
+    tdName.appendChild(name);tr.appendChild(tdName);
+    tdValue.appendChild(value);tr.appendChild(tdValue);
+    tdType.appendChild(type);tr.appendChild(tdType);
+
+    tr.id = 's'+s.id;
+
+    messages.appendChild(tr);
+
    });
 /*
   line = document.createElement('li');
